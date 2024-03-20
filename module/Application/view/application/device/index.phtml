@@ -1,0 +1,85 @@
+<?php
+$title = 'Devices';
+$this->headTitle($title);
+?>
+<h1><?php echo $this->escapeHtml($title); ?></h1>
+
+<form action="<?php echo $this->url('device', array('action'=>'index')); ?>" method="get" id="status_filter_form">
+    <label for="status_filter">Filter devices: </label>
+    <select name="status_filter" id="status_filter">
+        <option value="0">Select status</option>
+        <option value="<?php echo \Application\Model\Device::STATUS_AVAILABLE?>"
+            <?php if(isset($status) && $status == \Application\Model\Device::STATUS_AVAILABLE) {echo 'selected';} ?>>Available</option>
+        <option value="<?php echo \Application\Model\Device::STATUS_RENTED?>"
+            <?php if(isset($status) && $status == \Application\Model\Device::STATUS_RENTED) {echo 'selected';} ?>>Rented</option>
+        <option value="<?php echo \Application\Model\Device::STATUS_RESERVED?>"
+            <?php if(isset($status) && $status == \Application\Model\Device::STATUS_RESERVED) {echo 'selected';} ?>>Reserved</option>
+    </select>
+</form>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Category</th>
+        <th>Status</th>
+    </tr>
+    <?php if (!empty($devices)) {
+        foreach ($devices as $device) : ?>
+            <tr id="<?php echo $device->getId();?>">
+                <td><?php echo $this->escapeHtml($device->getName());?></td>
+                <td><?php echo $this->escapeHtml($device->getDescription());?></td>
+                <td><?php echo $this->escapeHtml($device->getCategoryName());?></td>
+                <td>
+                    <select name="status" id="status_<?php echo $device->getId();?>">
+                        <option value="<?php echo \Application\Model\Device::STATUS_AVAILABLE?>"
+                            <?php if($device->getStatus() == \Application\Model\Device::STATUS_AVAILABLE) {echo 'selected';} ?>>Available</option>
+                        <option value="<?php echo \Application\Model\Device::STATUS_RENTED?>"
+                            <?php if($device->getStatus() == \Application\Model\Device::STATUS_RENTED) {echo 'selected';} ?>>Rented</option>
+                        <option value="<?php echo \Application\Model\Device::STATUS_RESERVED?>"
+                            <?php if($device->getStatus() == \Application\Model\Device::STATUS_RESERVED) {echo 'selected';} ?>>Reserved</option>
+                    </select>
+                </td>
+            </tr>
+        <?php endforeach;
+    } ?>
+</table>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#status_filter').change(function() {
+            $('#status_filter_form').submit();
+        });
+
+        $("select[name='status']").change(function() {
+            var selectedStatus = $(this).val();
+            var device_id = $(this).closest('tr').attr('id');
+            console.log(selectedStatus);
+            console.log($(this).closest('tr').attr('id'));
+            $.ajax({
+                url: '/record/add-record',
+                method: 'POST',
+                data: { status: selectedStatus, device_id: device_id },
+                success: function(response1) {
+                    console.log(response1);
+
+                    $.ajax({
+                            url: '/device/update',
+                            method: 'POST',
+                            data: { status: selectedStatus, device_id: device_id },
+                            success: function(response2) {
+                                console.log(response2);
+                            },
+                            error: function(xhr, status, error2) {
+                                console.error(error2);
+                            }
+                        });
+                    },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+    });
+</script>

@@ -1,0 +1,30 @@
+<?php
+$title = 'Records';
+$this->headTitle($title);
+?>
+<h1><?php echo $this->escapeHtml($title); ?></h1>
+
+<table>
+    <tr>
+        <th>Device</th>
+        <th>Status</th>
+        <th>Datetime</th>
+    </tr>
+    <?php if (!empty($records)) {
+        foreach ($records as $record) : ?>
+            <tr id="<?php echo $record->getId();?>">
+                <td><?php echo $this->escapeHtml($record->getDeviceName());?></td>
+                <td><?php
+                    switch ($record->getStatus()) {
+                        case \Application\Model\Device::STATUS_AVAILABLE :
+                            echo 'available'; break;
+                        case \Application\Model\Device::STATUS_RENTED :
+                            echo 'rented'; break;
+                        case \Application\Model\Device::STATUS_RESERVED :
+                            echo 'reserved'; break;
+                    }?></td>
+                <td><?php echo $this->escapeHtml($record->getDatetime());?></td>
+            </tr>
+        <?php endforeach;
+    } ?>
+</table>
